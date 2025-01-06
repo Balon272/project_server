@@ -50,8 +50,8 @@ export function manGetPerson(personData) {
 }
 export function manRmvPerson(personData) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (personData.name.length > 1)
-            dbRemovePerson(personData);
+        const person = yield dbRemovePerson(personData);
+        return person;
     });
 }
 export function manUpdatePerson(personData) {

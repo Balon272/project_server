@@ -25,16 +25,22 @@ export async function dbSearchPerson(personData:{name: string, groupID: Types.Ob
       }
 }
 
-export async function dbRemovePerson(personData:{name: string, groupID: Types.ObjectId, _id: Types.ObjectId}){
-// remove only by ID
-  try{        
-      await Person.deleteOne(personData);
-    }
-    catch (error) {
-        console.error("Error deleting person in rep:", error);
-        throw new Error("Failed to create person");
-      }
-
+export async function dbRemovePerson(personData: { _id: Types.ObjectId }): Promise<IPerson | null> {
+  try {
+    // `findOneAndDelete` will return the deleted document or null if not found.
+    const person = await Person.findOneAndDelete(personData)
+      .then(person => {
+        return person;        // Return the deleted person.
+      })
+      .catch(err => {
+        console.error(err);    // Log any error that occurs during the delete.
+        return null;           // Return null if there's an error.
+      });
+    return person;  // Return the deleted person or null.
+  } catch (error) {
+    console.error("Error deleting person in dbRemovePerson:", error);
+    throw new Error("Failed to delete person");
+  }
 }
 
 export async function dbUpdatePerson(personData: { 

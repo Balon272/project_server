@@ -34,13 +34,21 @@ export function dbSearchPerson(personData) {
 }
 export function dbRemovePerson(personData) {
     return __awaiter(this, void 0, void 0, function* () {
-        // remove only by ID
         try {
-            yield Person.deleteOne(personData);
+            // `findOneAndDelete` will return the deleted document or null if not found.
+            const person = yield Person.findOneAndDelete(personData)
+                .then(person => {
+                return person; // Return the deleted person.
+            })
+                .catch(err => {
+                console.error(err); // Log any error that occurs during the delete.
+                return null; // Return null if there's an error.
+            });
+            return person; // Return the deleted person or null.
         }
         catch (error) {
-            console.error("Error deleting person in rep:", error);
-            throw new Error("Failed to create person");
+            console.error("Error deleting person in dbRemovePerson:", error);
+            throw new Error("Failed to delete person");
         }
     });
 }

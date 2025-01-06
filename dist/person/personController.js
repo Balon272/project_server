@@ -34,8 +34,9 @@ export const removePerson = (req, res) => __awaiter(void 0, void 0, void 0, func
     //Person  = {"name": "abcdefg", groupID: "", "_id": ""}
     try {
         const rmvPerson = req.body;
-        manRmvPerson(rmvPerson);
-        res.status(200).json(rmvPerson);
+        const person = yield manRmvPerson(rmvPerson);
+        console.log(person);
+        res.status(200).json(person);
     }
     catch (error) {
         res.status(500).json({ message: 'Error deleting person in Controller', error });

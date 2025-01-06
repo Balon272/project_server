@@ -28,12 +28,14 @@ res.status(500).json({ message: 'Error finding person in Controller', error });
 
 export const removePerson = async (req: Request, res: Response) => {
     //Person  = {"name": "abcdefg", groupID: "", "_id": ""}
-try {
-    const rmvPerson = req.body
-    manRmvPerson(rmvPerson);
-    res.status(200).json(rmvPerson);
-} catch (error) {
-res.status(500).json({ message: 'Error deleting person in Controller', error });
+try {  
+    const rmvPerson = req.body;
+    const person = await manRmvPerson(rmvPerson)
+    console.log(person);
+    res.status(200).json(person);
+}  
+catch (error) {
+    res.status(500).json({ message: 'Error deleting person in Controller', error });
 }
 }
 export const updatePerson = async (req: Request, res: Response) => {

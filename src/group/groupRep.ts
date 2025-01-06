@@ -42,25 +42,47 @@ export async function dbRemoveGroup(groupData:{name: string, subgroups: Types.Ob
 
 export async function dbUpdateGroup(groupData: { 
   _id: Types.ObjectId; 
-  updateFields: { name?: string; groupID?: Types.ObjectId; people?: Types.ObjectId[]; subgroups?: Types.ObjectId[] }; 
-}): Promise<IGroup | string> {  
-  const { _id, updateFields } = groupData; 
+  updateFields: { 
+    name?: string; 
+    groupID?: Types.ObjectId; 
+    people?: Types.ObjectId[]; 
+    subgroups?: Types.ObjectId[]; 
+  }; 
+}): Promise<IGroup | string> {
+  const { _id, updateFields } = groupData;
 
   try {
+    const updateObj: any = {};
+
+    // Set name and groupID fields
+    if (updateFields.name) {
+      updateObj.name = updateFields.name;
+    }
+    if (updateFields.groupID) {
+      updateObj.groupID = updateFields.groupID;
+    }
+    // Push to people and subgroups arrays
+    if (updateFields.people && updateFields.people.length > 0) {
+      updateObj.$push = updateObj.$push || {};
+      updateObj.$push.people = { $each: updateFields.people };
+    }
+    if (updateFields.subgroups && updateFields.subgroups.length > 0) {
+      updateObj.$push = updateObj.$push || {};
+      updateObj.$push.subgroups = { $each: updateFields.subgroups };
+    }
     const updatedGroup = await Group.findByIdAndUpdate(
       _id,
-      { $set: updateFields },
-      { new: true, runValidators: true }
+      updateObj,
+      { new: true, runValidators: true } // Return the updated document and run validators
     );
-
     if (!updatedGroup) {
       console.log("Group not found");
-      return "Group not found"; // Return a fail message
+      return "Group not found"; // Return a failure message if the group doesn't exist
     }
     console.log("Group updated successfully:", updatedGroup);
-    return updatedGroup; // Return the updated group
+    return updatedGroup;
   } catch (error) {
     console.error("Error updating group:", error, _id);
-    throw error; // Rethrow the error to let the caller handle it
+    throw error; // Rethrow the error for the caller to handle
   }
 }

@@ -44,9 +44,9 @@ export async function manGetPerson(personData:{name: string, groupID: Types.Obje
     
 }
 
-export async function manRmvPerson(personData:{name: string, groupID: Types.ObjectId, _id: Types.ObjectId} ){
-    if(personData.name.length > 1)
-        dbRemovePerson(personData);
+export async function manRmvPerson(personData:{ _id: Types.ObjectId} ): Promise<Object | any>{
+       const person =  await dbRemovePerson(personData)
+        return person;
 }
 
 

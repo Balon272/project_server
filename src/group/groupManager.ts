@@ -33,7 +33,7 @@ export async function manGetGroup(groupData:{name: string, subgroups: Types.Obje
 export async function manRmvGroup(groupData:{name: string, subgroups: Types.ObjectId [], people:Types.ObjectId [] ,
     groupID: Types.ObjectId} ){
     if(groupData.name.length > 1)
-        dbRemoveGroup(groupData);
+        dbRemoveGroup(groupData)
 }
 
 
