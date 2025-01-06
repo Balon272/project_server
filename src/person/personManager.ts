@@ -32,13 +32,7 @@ export async function manCreatePerson(personData: { name: string; groupID?: Type
 
 
 export async function manGetPerson(personData:{name: string, groupID: Types.ObjectId, _id: Types.ObjectId} ){
-    /*
-    if ('groupID' in personData){
-    //ADD COMM TO GROUP LATER
-    //personInSameGroup(personData);
-    //addPersonToGroup(personData)
-    //personData.groupID = ObjectId.createFromHexString(personData.groupID);
-    }*/
+    
     if(personData.name.length > 1)
         dbSearchPerson(personData);
     

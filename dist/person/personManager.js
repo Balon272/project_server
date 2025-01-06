@@ -37,13 +37,6 @@ export function manCreatePerson(personData) {
 }
 export function manGetPerson(personData) {
     return __awaiter(this, void 0, void 0, function* () {
-        /*
-        if ('groupID' in personData){
-        //ADD COMM TO GROUP LATER
-        //personInSameGroup(personData);
-        //addPersonToGroup(personData)
-        //personData.groupID = ObjectId.createFromHexString(personData.groupID);
-        }*/
         if (personData.name.length > 1)
             dbSearchPerson(personData);
     });

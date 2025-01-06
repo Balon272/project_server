@@ -3,28 +3,34 @@ import { dbCreateGroup, dbSearchGroup, dbRemoveGroup, dbUpdateGroup } from "./gr
 import {Types} from 'mongoose';
 
 
-export async function manCreateGroup(groupData:{name: string, subgroups: Types.ObjectId [], people:Types.ObjectId [] ,
+export async function manCreateGroup(groupData:{name: string, subgroups: Types.ObjectId[], people:Types.ObjectId[] ,
     groupID: Types.ObjectId} ){
-    /*
-    if ('groupID' in groupData){
-    //ADD COMM TO PERSON LATER
-    //groupInSameGroup(groupData);
-    //addgroupToGroup(groupData)
-    //groupData.groupID = ObjectId.createFromHexString(groupData.groupID);
-    }*/
-    if(groupData.name.length > 1)
-        await dbCreateGroup(groupData);
-    
+        // Validate the person's name
+        try{
+             if (groupData.name.length <= 1) {
+               throw new Error('Name must be longer than 1 character');
+             }
+             const createdGroup = await dbCreateGroup(groupData)
+             .then(async createdGroup => {
+               if (groupData.groupID) {
+                   const updateGroupinGroupJSON = {
+                     _id: groupData.groupID,
+                     updateFields: {
+                       subgroups: [createdGroup._id] as Types.ObjectId[], 
+                   },
+                   };
+                   await manUpdateGroup(updateGroupinGroupJSON);
+           }
+       })
+             
+             return { message: 'Person created successfully', person: createdGroup };
+           }
+            catch (error) {
+             throw error; 
+           }
 }
 export async function manGetGroup(groupData:{name: string, subgroups: Types.ObjectId [], people: Types.ObjectId [] ,
     groupID: Types.ObjectId} ){
-    /*
-    if ('groupID' in groupData){
-    //ADD COMM TO GROUP LATER
-    //groupInSameGroup(groupData);
-    //addgroupToGroup(groupData)
-    //groupData.groupID = ObjectId.createFromHexString(groupData.groupID);
-    }*/
     if(groupData.name.length > 1)
         dbSearchGroup(groupData);
     

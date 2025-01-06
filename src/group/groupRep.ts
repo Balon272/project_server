@@ -4,11 +4,12 @@ import mongoose, {Types} from 'mongoose'
 
  //Group = {"name": "abc", "subgroups": "[]", "people": "[]", groupID:}
 
-export async function dbCreateGroup(groupData:{name: string, subgroups: Types.ObjectId [], people:Types.ObjectId [] ,
-     groupID: Types.ObjectId}){
+export async function dbCreateGroup(groupData:{name: string, subgroups?: Types.ObjectId [], people?:Types.ObjectId [] ,
+     groupID?: Types.ObjectId}){
     try{
         const group = new Group(groupData);
-        await group.save()
+        const createdGroup = await group.save()
+        return createdGroup;
     }
     catch (error) {
         console.error("Error creating group in rep:", error);

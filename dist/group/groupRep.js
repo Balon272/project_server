@@ -13,7 +13,8 @@ export function dbCreateGroup(groupData) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const group = new Group(groupData);
-            yield group.save();
+            const createdGroup = yield group.save();
+            return createdGroup;
         }
         catch (error) {
             console.error("Error creating group in rep:", error);

@@ -10,26 +10,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { dbCreateGroup, dbSearchGroup, dbRemoveGroup, dbUpdateGroup } from "./groupRep.js";
 export function manCreateGroup(groupData) {
     return __awaiter(this, void 0, void 0, function* () {
-        /*
-        if ('groupID' in groupData){
-        //ADD COMM TO PERSON LATER
-        //groupInSameGroup(groupData);
-        //addgroupToGroup(groupData)
-        //groupData.groupID = ObjectId.createFromHexString(groupData.groupID);
-        }*/
-        if (groupData.name.length > 1)
-            yield dbCreateGroup(groupData);
+        // Validate the person's name
+        try {
+            if (groupData.name.length <= 1) {
+                throw new Error('Name must be longer than 1 character');
+            }
+            const createdGroup = yield dbCreateGroup(groupData)
+                .then((createdGroup) => __awaiter(this, void 0, void 0, function* () {
+                if (groupData.groupID) {
+                    const updateGroupinGroupJSON = {
+                        _id: groupData.groupID,
+                        updateFields: {
+                            subgroups: [createdGroup._id],
+                        },
+                    };
+                    yield manUpdateGroup(updateGroupinGroupJSON);
+                }
+            }));
+            return { message: 'Person created successfully', person: createdGroup };
+        }
+        catch (error) {
+            throw error;
+        }
     });
 }
 export function manGetGroup(groupData) {
     return __awaiter(this, void 0, void 0, function* () {
-        /*
-        if ('groupID' in groupData){
-        //ADD COMM TO GROUP LATER
-        //groupInSameGroup(groupData);
-        //addgroupToGroup(groupData)
-        //groupData.groupID = ObjectId.createFromHexString(groupData.groupID);
-        }*/
         if (groupData.name.length > 1)
             dbSearchGroup(groupData);
     });
