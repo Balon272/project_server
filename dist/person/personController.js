@@ -52,11 +52,13 @@ export const updatePerson = (req, res) => __awaiter(void 0, void 0, void 0, func
     //   }
     try {
         const updatePerson = req.body;
-        manUpdatePerson(updatePerson);
-        res.status(200).json(updatePerson[1]);
+        manUpdatePerson(updatePerson)
+            .then(completedUpdate => res.status(200).json(completedUpdate))
+            .catch(err => { res.status(500).json({ message: 'Error deleting person', err }); });
     }
     catch (error) {
-        res.status(500).json({ message: 'Error deleting person in Controller', error });
+        console.log('test');
+        res.status(500).json({ message: 'Error deleting person', error });
     }
 });
 //# sourceMappingURL=personController.js.map

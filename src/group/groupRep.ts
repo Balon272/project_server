@@ -17,22 +17,20 @@ export async function dbCreateGroup(groupData:{name: string, subgroups?: Types.O
       }
 }
 
-export async function dbSearchGroup(groupData:{name: string, subgroups: Types.ObjectId [], people:Types.ObjectId [] ,
-    groupID: Types.ObjectId}){
+export async function dbSearchGroup(groupData:{name?: string, subgroups?: Types.ObjectId [], people?:Types.ObjectId [] ,
+    groupID?: Types.ObjectId, _id: Types.ObjectId}){
     try{         
-        await Group.find(groupData);
+        return await Group.findById(groupData._id);
     }
     catch (error) {
         console.error("Error finding group in rep:", error);
-        throw new Error("Failed to create group");
+        throw new Error("Failed to find group");
       }
 }
 
-export async function dbRemoveGroup(groupData:{name: string, subgroups: Types.ObjectId [], people:Types.ObjectId [] ,
-    groupID: Types.ObjectId}){
-// remove only by ID
-  try{        
-      await Group.deleteOne(groupData);
+export async function dbRemoveGroup(groupData:{_id: Types.ObjectId}){
+  try{
+      await Group.findByIdAndDelete(groupData._id);
     }
     catch (error) {
         console.error("Error deleting group in rep:", error);

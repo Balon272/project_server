@@ -23,8 +23,8 @@ export const getGroup = (req, res) => __awaiter(void 0, void 0, void 0, function
     //Group = {"name": "abc", "subgroups": "[]", "people": "[]", _id:}
     try {
         const findGroup = req.body;
-        manGetGroup(findGroup);
-        res.status(200).json(findGroup);
+        const Details = yield manGetGroup(findGroup);
+        res.status(200).json(Details);
     }
     catch (error) {
         res.status(500).json({ message: 'Error finding group in Controller', error });
@@ -34,11 +34,11 @@ export const removeGroup = (req, res) => __awaiter(void 0, void 0, void 0, funct
     //Group = {"name": "abc", "subgroups": "[]", "people": "[]", _id:}
     try {
         const rmvGroup = req.body;
-        manRmvGroup(rmvGroup);
-        res.status(200).json(rmvGroup);
+        const removedGroup = yield manRmvGroup(rmvGroup);
+        res.status(200).json(removedGroup);
     }
     catch (error) {
-        res.status(500).json({ message: 'Error deleting group in Controller', error });
+        res.status(500).json({ message: error.message });
     }
 });
 export const updateGroup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -50,11 +50,11 @@ export const updateGroup = (req, res) => __awaiter(void 0, void 0, void 0, funct
     //   }
     try {
         const updateGroup = req.body;
-        manUpdateGroup(updateGroup)
-            .then(completedUpdate => res.status(200).json(completedUpdate));
+        const completedUpdate = yield manUpdateGroup(updateGroup);
+        res.status(200).json(completedUpdate);
     }
     catch (error) {
-        res.status(500).json({ message: 'Error deleting group in Controller', error });
+        res.status(500).json({ message: error.message });
     }
 });
 //# sourceMappingURL=groupController.js.map

@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { dbCreatePerson, dbSearchPerson, dbRemovePerson, dbUpdatePerson } from "./personRep.js";
-import { manUpdateGroup } from '../group/groupManager.js';
+import { manGetGroup, manUpdateGroup } from '../group/groupManager.js';
 export function manCreatePerson(personData) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -25,7 +25,12 @@ export function manCreatePerson(personData) {
                             people: [createdPerson._id]
                         },
                     };
-                    yield manUpdateGroup(updatePersoninGroupJSON);
+                    if (yield isPersonInGroup({ groupID: personData.groupID, _id: createdPerson._id })) {
+                        throw new Error('Person Already in group');
+                    }
+                    else {
+                        yield manUpdateGroup(updatePersoninGroupJSON);
+                    }
                 }
             }));
             return { message: 'Person created successfully', person: createdPerson };
@@ -49,8 +54,35 @@ export function manRmvPerson(personData) {
 }
 export function manUpdatePerson(personData) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { _id, updateFields } = personData;
-        dbUpdatePerson(personData);
+        try {
+            const { _id, updateFields } = personData;
+            if (updateFields.groupID && !(yield isPersonInGroup({ groupID: updateFields.groupID, _id: _id })))
+                return dbUpdatePerson(personData);
+            else {
+                throw new Error('Person Already in group');
+            }
+        }
+        catch (_a) {
+            return { message: 'Person already in group', personData };
+        }
+    });
+}
+function isPersonInGroup(personData) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const group = yield manGetGroup({
+            _id: personData.groupID // Pass the groupID as _id
+        });
+        if (group == undefined) {
+            return false;
+        }
+        // Iterating over the people array using a for loop
+        for (let i = 0; i < group.people.length; i++) {
+            const personId = group.people[i];
+            if (personData._id == personId) {
+                return true;
+            }
+        }
+        return false;
     });
 }
 //# sourceMappingURL=personManager.js.map

@@ -25,19 +25,18 @@ export function dbCreateGroup(groupData) {
 export function dbSearchGroup(groupData) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield Group.find(groupData);
+            return yield Group.findById(groupData._id);
         }
         catch (error) {
             console.error("Error finding group in rep:", error);
-            throw new Error("Failed to create group");
+            throw new Error("Failed to find group");
         }
     });
 }
 export function dbRemoveGroup(groupData) {
     return __awaiter(this, void 0, void 0, function* () {
-        // remove only by ID
         try {
-            yield Group.deleteOne(groupData);
+            yield Group.findByIdAndDelete(groupData._id);
         }
         catch (error) {
             console.error("Error deleting group in rep:", error);

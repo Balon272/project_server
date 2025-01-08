@@ -19,10 +19,10 @@ export const getGroup = async (req: Request, res: Response) => {
         //Group = {"name": "abc", "subgroups": "[]", "people": "[]", _id:}
 try {
     const findGroup = req.body
-    manGetGroup(findGroup);
-    res.status(200).json(findGroup);
+    const Details = await manGetGroup(findGroup);
+    res.status(200).json(Details);
 } catch (error) {
-res.status(500).json({ message: 'Error finding group in Controller', error });
+        res.status(500).json({ message: 'Error finding group in Controller', error });
 }
 }
 
@@ -30,11 +30,11 @@ export const removeGroup = async (req: Request, res: Response) => {
        //Group = {"name": "abc", "subgroups": "[]", "people": "[]", _id:}
 try {
     const rmvGroup = req.body
-    manRmvGroup(rmvGroup);
-    res.status(200).json(rmvGroup);
-} catch (error) {
-res.status(500).json({ message: 'Error deleting group in Controller', error });
-}
+    const removedGroup = await manRmvGroup(rmvGroup);
+    res.status(200).json(removedGroup);
+} catch (error:any) {
+    res.status(500).json({ message: error.message});
+    }
 }
 export const updateGroup = async (req: Request, res: Response) => {
     // {
@@ -45,9 +45,10 @@ export const updateGroup = async (req: Request, res: Response) => {
     //   }
 try {
     const updateGroup = req.body;
-    manUpdateGroup(updateGroup)
-    .then(completedUpdate => res.status(200).json(completedUpdate))
-} catch (error) {
-res.status(500).json({ message: 'Error deleting group in Controller', error });
+    const completedUpdate = await manUpdateGroup(updateGroup)
+    res.status(200).json(completedUpdate) 
+} 
+catch (error:any) {
+     res.status(500).json({ message: error.message});
 }
 }
