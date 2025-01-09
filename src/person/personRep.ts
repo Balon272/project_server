@@ -3,9 +3,9 @@ import {IPerson, Person} from './personModel.js'
 import mongoose, {Types} from 'mongoose'
 
 
-export async function dbCreatePerson(personData:{name: string, groupID?: Types.ObjectId}):Promise<IPerson>{
+export async function dbCreatePerson(name: string):Promise<IPerson>{
     try{
-        const person = new Person(personData);
+        const person = new Person(name);
         const createdPerson = await person.save()
         return createdPerson;
     }
@@ -15,9 +15,9 @@ export async function dbCreatePerson(personData:{name: string, groupID?: Types.O
       }
 }
 
-export async function dbSearchPerson(personData:{name: string, groupID: Types.ObjectId, _id: Types.ObjectId}){
+export async function dbSearchPerson(_id: Types.ObjectId){
     try{         
-        await Person.find(personData);
+        return await Person.find(_id);
     }
     catch (error) {
         console.error("Error finding person in rep:", error);
@@ -25,17 +25,10 @@ export async function dbSearchPerson(personData:{name: string, groupID: Types.Ob
       }
 }
 
-export async function dbRemovePerson(personData: { _id: Types.ObjectId }): Promise<IPerson | null> {
+export async function dbRemovePerson( _id: Types.ObjectId ): Promise<IPerson | null> {
   try {
     // `findOneAndDelete` will return the deleted document or null if not found.
-    const person = await Person.findOneAndDelete(personData)
-      .then(person => {
-        return person;        // Return the deleted person.
-      })
-      .catch(err => {
-        console.error(err);    // Log any error that occurs during the delete.
-        return null;           // Return null if there's an error.
-      });
+    const person = await Person.findOneAndDelete(_id)
     return person;  // Return the deleted person or null.
   } catch (error) {
     console.error("Error deleting person in dbRemovePerson:", error);
@@ -43,16 +36,12 @@ export async function dbRemovePerson(personData: { _id: Types.ObjectId }): Promi
   }
 }
 
-export async function dbUpdatePerson(personData: { 
-  _id: Types.ObjectId; 
-  updateFields: { name?: string; groupID?: Types.ObjectId; }; 
-}) {  
-  const { _id, updateFields } = personData; 
+export async function dbUpdatePerson(_id: Types.ObjectId, name: string) {  
 
   try {
     const updatedPerson = await Person.findByIdAndUpdate(
       _id,
-      { $set: updateFields },
+      { $set: { name: name } },
       { new: true, runValidators: true }
     );
 

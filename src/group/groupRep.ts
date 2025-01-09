@@ -4,8 +4,7 @@ import mongoose, {Types} from 'mongoose'
 
  //Group = {"name": "abc", "subgroups": "[]", "people": "[]", groupID:}
 
-export async function dbCreateGroup(groupData:{name: string, subgroups?: Types.ObjectId [], people?:Types.ObjectId [] ,
-     groupID?: Types.ObjectId}){
+export async function dbCreateGroup(groupData:{name: string, subgroups?: Types.ObjectId [], people?:Types.ObjectId []}){
     try{
         const group = new Group(groupData);
         const createdGroup = await group.save()
@@ -34,7 +33,7 @@ export async function dbRemoveGroup(groupData:{_id: Types.ObjectId}){
     }
     catch (error) {
         console.error("Error deleting group in rep:", error);
-        throw new Error("Failed to create group");
+        throw new Error("Failed to remove group");
       }
 
 }

@@ -17,11 +17,6 @@ const groupSchema = new Schema({
             ref: "Person", // Reference to the Person collection
         },
     ],
-    groupID: {
-        type: mongoose.Schema.Types.ObjectId, // groupID is a reference to another group
-        ref: "Group", // Reference to the Group collection (optional)
-        required: false, // Optional, set to true if necessary
-    },
 }, {
     collection: "groups", // Specify collection name explicitly if needed
 });

@@ -12,12 +12,16 @@ export function manCreateGroup(groupData) {
     return __awaiter(this, void 0, void 0, function* () {
         // Validate the person's name
         try {
-            if (groupData.name.length <= 1) {
+            if (groupData.name && groupData.name.length <= 1) {
                 throw new Error('Name must be longer than 1 character');
             }
-            const createdGroup = yield dbCreateGroup(groupData)
-                .then((createdGroup) => __awaiter(this, void 0, void 0, function* () {
-                if (groupData.groupID) {
+            const createdGroup = yield dbCreateGroup(groupData);
+            if (createdGroup.groupID) {
+                const result = {
+                    groupID: createdGroup.groupID,
+                    _id: createdGroup._id
+                };
+                if (yield isGroupOwnFather(result)) {
                     const updateGroupinGroupJSON = {
                         _id: groupData.groupID,
                         updateFields: {
@@ -26,7 +30,7 @@ export function manCreateGroup(groupData) {
                     };
                     yield manUpdateGroup(updateGroupinGroupJSON);
                 }
-            }));
+            }
             return { message: 'Person created successfully', person: createdGroup };
         }
         catch (error) {
@@ -64,9 +68,16 @@ export function manRmvGroup(groupData) {
 }
 export function manUpdateGroup(groupData) {
     return __awaiter(this, void 0, void 0, function* () {
+        const result = {
+            groupID: groupData.updateFields.groupID,
+            _id: groupData._id
+        };
         try {
             if (groupData._id == groupData.updateFields.groupID) {
                 throw new Error("Can't insert a group into itself!");
+            }
+            else if (yield isGroupOwnFather(result)) {
+                throw new Error("Can't insert a group into own lineage!");
             }
             else {
                 return dbUpdateGroup(groupData);
@@ -77,20 +88,36 @@ export function manUpdateGroup(groupData) {
         }
     });
 }
-/*async function isGroupInGroup(personData:{groupID: Types.ObjectId, _id: Types.ObjectId} )
+export function isGroupOwnFather(groupData) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Returns true if group is in it's own lineage
+        // Base case: If the groupID is null/undefined, no parent exists
+        if (!groupData.groupID) {
+            return false;
+        }
+        // Fetch the parent group using groupID
+        const parentGroup = yield manGetGroup({ _id: groupData.groupID });
+        if (!parentGroup) {
+            return false; // No parent group found, valid hierarchy
+        }
+        // Direct circular reference check
+        if (parentGroup._id.equals(groupData._id)) {
+            return true; // Group is its own ancestor
+        }
+        // Recursive check: Traverse up the hierarchy
+        return isGroupOwnFather({ groupID: parentGroup.groupID, _id: groupData._id });
+    });
+}
+//TO-DO ADD AND ADJUST
+/*async function isPersonInGroup(personData:{groupID: Types.ObjectId, _id: Types.ObjectId} )
 // returns false if not in group
 {
   const group = await manGetGroup({
     _id: personData.groupID // Pass the groupID as _id
 });
-if (group == undefined){return false}
-// Iterating over the people array using a for loop
-for (let i = 0; i < group.people.length; i++) {
-    const personId = group.people[i];
-    if (personData._id == personId){
-      return true
-    }
-}
+if (!group)
   return false
-}*/ 
+// Iterating over the people array using a for loop
+  return group.people.includes(personData._id)
+}*/
 //# sourceMappingURL=groupManager.js.map

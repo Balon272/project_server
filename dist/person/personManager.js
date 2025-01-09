@@ -8,31 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { dbCreatePerson, dbSearchPerson, dbRemovePerson, dbUpdatePerson } from "./personRep.js";
-import { manGetGroup, manUpdateGroup } from '../group/groupManager.js';
-export function manCreatePerson(personData) {
+//Create multiple groups for person []
+export function manCreatePerson(name) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Validate the person's name
-            if (personData.name.length <= 1) {
+            if (name.length <= 1) {
                 throw new Error('Name must be longer than 1 character');
             }
-            const createdPerson = yield dbCreatePerson(personData)
-                .then((createdPerson) => __awaiter(this, void 0, void 0, function* () {
-                if (personData.groupID) {
-                    const updatePersoninGroupJSON = {
-                        _id: personData.groupID,
-                        updateFields: {
-                            people: [createdPerson._id]
-                        },
-                    };
-                    if (yield isPersonInGroup({ groupID: personData.groupID, _id: createdPerson._id })) {
-                        throw new Error('Person Already in group');
-                    }
-                    else {
-                        yield manUpdateGroup(updatePersoninGroupJSON);
-                    }
-                }
-            }));
+            const createdPerson = yield dbCreatePerson(name);
             return { message: 'Person created successfully', person: createdPerson };
         }
         catch (error) {
@@ -40,49 +24,36 @@ export function manCreatePerson(personData) {
         }
     });
 }
-export function manGetPerson(personData) {
+export function manGetPerson(_id) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (personData.name.length > 1)
-            dbSearchPerson(personData);
+        return yield dbSearchPerson(_id);
     });
 }
-export function manRmvPerson(personData) {
+export function manRmvPerson(_id) {
     return __awaiter(this, void 0, void 0, function* () {
-        const person = yield dbRemovePerson(personData);
+        const person = yield dbRemovePerson(_id);
         return person;
     });
 }
-export function manUpdatePerson(personData) {
+export function manUpdatePerson(_id, updateFields) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { _id, updateFields } = personData;
-            if (updateFields.groupID && !(yield isPersonInGroup({ groupID: updateFields.groupID, _id: _id })))
-                return dbUpdatePerson(personData);
-            else {
-                throw new Error('Person Already in group');
-            }
+            return dbUpdatePerson(_id, updateFields.name);
         }
-        catch (_a) {
-            return { message: 'Person already in group', personData };
+        catch (error) {
+            return { message: error.message };
         }
     });
 }
-function isPersonInGroup(personData) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const group = yield manGetGroup({
-            _id: personData.groupID // Pass the groupID as _id
-        });
-        if (group == undefined) {
-            return false;
-        }
-        // Iterating over the people array using a for loop
-        for (let i = 0; i < group.people.length; i++) {
-            const personId = group.people[i];
-            if (personData._id == personId) {
-                return true;
-            }
-        }
-        return false;
-    });
-}
+/*async function isPersonInGroup(_id: Types.ObjectId )
+// returns false if not in group
+{
+  const group = await manGetGroup({
+    _id: personData.groupID // Pass the groupID as _id
+});
+if (!group)
+  return false
+// Iterating over the people array using a for loop
+  return group.people.includes(personData._id)
+}*/ 
 //# sourceMappingURL=personManager.js.map

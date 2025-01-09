@@ -40,7 +40,7 @@ export function dbRemoveGroup(groupData) {
         }
         catch (error) {
             console.error("Error deleting group in rep:", error);
-            throw new Error("Failed to create group");
+            throw new Error("Failed to remove group");
         }
     });
 }

@@ -4,31 +4,16 @@ import { manCreateGroup, manGetGroup, manRmvGroup, manUpdateGroup } from '../gro
 import {Types} from 'mongoose';
 import { json } from "stream/consumers";
 
-export async function manCreatePerson(personData: { name: string; groupID?: Types.ObjectId }) {
+
+//Create multiple groups for person []
+
+export async function manCreatePerson(name: string) {
     try {
       // Validate the person's name
-      if (personData.name.length <= 1) {
+      if (name.length <= 1) {
         throw new Error('Name must be longer than 1 character');
       }
-      
-
-      const createdPerson = await dbCreatePerson(personData)
-      .then(async createdPerson => {
-        if (personData.groupID) {
-            const updatePersoninGroupJSON = {
-              _id: personData.groupID,
-              updateFields: {
-                people: [createdPerson._id]
-            },
-            };
-            if (await isPersonInGroup({  groupID: personData.groupID, _id: createdPerson._id })){
-              throw new Error('Person Already in group')
-            }
-            else{
-              await manUpdateGroup(updatePersoninGroupJSON);}
-    }
-})
-      
+      const createdPerson = await dbCreatePerson(name)      
       return { message: 'Person created successfully', person: createdPerson };
     }
      catch (error) {
@@ -38,48 +23,35 @@ export async function manCreatePerson(personData: { name: string; groupID?: Type
 
 
 
-export async function manGetPerson(personData:{name: string, groupID: Types.ObjectId, _id: Types.ObjectId} ){
-    
-    if(personData.name.length > 1)
-        dbSearchPerson(personData);
-    
+export async function manGetPerson( _id: Types.ObjectId){  
+              return await dbSearchPerson(_id);
 }
 
-export async function manRmvPerson(personData:{ _id: Types.ObjectId} ): Promise<Object | any>{
-       const person =  await dbRemovePerson(personData)
-        return person;
+export async function manRmvPerson(_id: Types.ObjectId): Promise<Object | any>{
+       const person =  await dbRemovePerson(_id)
+       return person;
 }
 
 
-export async function manUpdatePerson(personData: { 
-    _id: Types.ObjectId; updateFields: { name?: string; groupID?: Types.ObjectId; };
-  }){  
+export async function manUpdatePerson(
+    _id: Types.ObjectId, updateFields: {name: string;}
+  ){  
     try {
-    const { _id, updateFields } = personData;
-    if (updateFields.groupID && !await isPersonInGroup({ groupID: updateFields.groupID, _id: _id }))
-      return dbUpdatePerson(personData);
-      else{
-        throw new Error('Person Already in group')
-      }
+      return dbUpdatePerson(_id, updateFields.name);
     }
-    catch{
-      return { message: 'Person already in group', personData };
+    catch(error:any ) {
+      return { message: error.message };
     }
 }
 
-async function isPersonInGroup(personData:{groupID: Types.ObjectId, _id: Types.ObjectId} ) 
+/*async function isPersonInGroup(_id: Types.ObjectId ) 
 // returns false if not in group
 {
   const group = await manGetGroup({
     _id: personData.groupID // Pass the groupID as _id
 });
-if (group == undefined){return false}
-// Iterating over the people array using a for loop
-for (let i = 0; i < group.people.length; i++) {
-    const personId = group.people[i];
-    if (personData._id == personId){
-      return true
-    } 
-}
+if (!group)
   return false
-}
+// Iterating over the people array using a for loop
+  return group.people.includes(personData._id)
+}*/

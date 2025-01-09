@@ -15,10 +15,6 @@ const personSchema = new Schema<IPerson>(
       required: true,
       trim: true,
     },
-    groupID: {
-      type: mongoose.Schema.Types.ObjectId, // Correct placement of groupID
-      ref: 'Group', // Optionally reference the 'Group' collection
-    }
   },
   {
     collection: 'people' // Specify collection name (optional, defaults to pluralized model name)
@@ -27,9 +23,7 @@ const personSchema = new Schema<IPerson>(
 
   export interface IPerson extends Document {
     name: string;
-    groupID: Types.ObjectId;
     _id: Types.ObjectId;
-    
   }
 
 

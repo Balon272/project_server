@@ -1,6 +1,5 @@
 import {Router} from 'express'
 import {createGroup, getGroup, removeGroup, updateGroup} from './groupController.js';
-
 const groupRouter = Router();
 
 groupRouter.post('/group/post', createGroup);

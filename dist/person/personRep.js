@@ -8,10 +8,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { Person } from './personModel.js';
-export function dbCreatePerson(personData) {
+export function dbCreatePerson(name) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const person = new Person(personData);
+            const person = new Person(name);
             const createdPerson = yield person.save();
             return createdPerson;
         }
@@ -21,10 +21,10 @@ export function dbCreatePerson(personData) {
         }
     });
 }
-export function dbSearchPerson(personData) {
+export function dbSearchPerson(_id) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield Person.find(personData);
+            return yield Person.find(_id);
         }
         catch (error) {
             console.error("Error finding person in rep:", error);
@@ -32,18 +32,11 @@ export function dbSearchPerson(personData) {
         }
     });
 }
-export function dbRemovePerson(personData) {
+export function dbRemovePerson(_id) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // `findOneAndDelete` will return the deleted document or null if not found.
-            const person = yield Person.findOneAndDelete(personData)
-                .then(person => {
-                return person; // Return the deleted person.
-            })
-                .catch(err => {
-                console.error(err); // Log any error that occurs during the delete.
-                return null; // Return null if there's an error.
-            });
+            const person = yield Person.findOneAndDelete(_id);
             return person; // Return the deleted person or null.
         }
         catch (error) {
@@ -52,11 +45,10 @@ export function dbRemovePerson(personData) {
         }
     });
 }
-export function dbUpdatePerson(personData) {
+export function dbUpdatePerson(_id, name) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { _id, updateFields } = personData;
         try {
-            const updatedPerson = yield Person.findByIdAndUpdate(_id, { $set: updateFields }, { new: true, runValidators: true });
+            const updatedPerson = yield Person.findByIdAndUpdate(_id, { $set: { name: name } }, { new: true, runValidators: true });
             if (!updatedPerson) {
                 console.log("Person not found");
                 return null;
