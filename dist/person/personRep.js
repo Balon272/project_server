@@ -62,5 +62,4 @@ export function dbUpdatePerson(_id, name) {
         }
     });
 }
-function getPersonGroup() { }
 //# sourceMappingURL=personRep.js.map

@@ -1,9 +1,7 @@
-import { IPerson } from "./personModel";
+
 import { dbCreatePerson, dbSearchPerson, dbRemovePerson, dbUpdatePerson } from "./personRep.js";
 import { manCreateGroup, manGetGroup, manRmvGroup, manUpdateGroup } from '../group/groupManager.js';
 import {Types} from 'mongoose';
-import { json } from "stream/consumers";
-
 
 //Create multiple groups for person []
 
@@ -22,7 +20,7 @@ export async function manCreatePerson(name: string) {
 }
 
 export async function manGetPerson( _id: Types.ObjectId){  
-              return await dbSearchPerson(_id);
+      return await dbSearchPerson(_id);
 }
 
 export async function manRmvPerson(_id: Types.ObjectId): Promise<Object | any>{
@@ -42,14 +40,4 @@ export async function manUpdatePerson(
     }
 }
 
-/*async function isPersonInGroup(_id: Types.ObjectId ) 
-// returns false if not in group
-{
-  const group = await manGetGroup({
-    _id: personData.groupID // Pass the groupID as _id
-});
-if (!group)
-  return false
-// Iterating over the people array using a for loop
-  return group.people.includes(personData._id)
-}*/
+

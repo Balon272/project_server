@@ -1,4 +1,4 @@
-import { IGroup } from "./groupModel";
+import { IGroup, Group } from "./groupModel.js";
 import { dbCreateGroup, dbSearchGroup, dbRemoveGroup, dbUpdateGroup, fetchAllGroups } from "./groupRep.js";
 import {Types} from 'mongoose';
 
@@ -9,7 +9,8 @@ export async function manCreateGroup(groupData:{name: string, subgroups: Types.O
                throw new Error('Name must be longer than 1 character');
              }
              const createdGroup = await dbCreateGroup(groupData)
-             
+
+                
                if (createdGroup.subgroups) {
                 const result = {
                   subgroups: createdGroup.subgroups,
@@ -64,11 +65,17 @@ export async function manRmvGroup(_id:Types.ObjectId){
 }
 
 
-export async function manUpdateGroup(
-  _id: Types.ObjectId,
+export async function manUpdateGroup(  _id: Types.ObjectId,
   updateFields: { name?: string; people?: Types.ObjectId[]; subgroups?: Types.ObjectId[] }
 ) {
   try {
+    if (updateFields.people){
+      updateFields.people.forEach(async person =>{
+        if (await isPersonInGroup(person, _id)){
+          throw new Error(`Can't insert the person ${person} again to the same group!`);
+        }
+      })
+    }
     if (updateFields.subgroups) {
       // Check if the group is trying to insert itself into its subgroups
       if (updateFields.subgroups.includes(_id)) {
@@ -130,17 +137,20 @@ export async function manGetAllGroups() {
   return await fetchAllGroups();
 }
 
-//TO-DO ADD AND ADJUST
-/*async function isPersonInGroup(personData:{groupID: Types.ObjectId, _id: Types.ObjectId} ) 
-// returns false if not in group
-{
-  const group = await manGetGroup({
-    _id: personData.groupID // Pass the groupID as _id
-});
-if (!group)
-  return false
-// Iterating over the people array using a for loop
-  return group.people.includes(personData._id)
-}*/
-
-
+async function isPersonInGroup(personId: Types.ObjectId, groupId: Types.ObjectId): Promise<boolean> {
+  try {
+    // Find the group by its ID
+    const group = await Group.findById(groupId).exec();
+    
+    // If the group is found and the person's ID exists in the group’s people array, return true
+    if (group && group.people.includes(personId)) {
+      return true;
+    }
+    
+    // If the group doesn't contain the person, return false
+    return false;
+  } catch (error) {
+    console.error("Error checking if person is in group:", error);
+    return false;
+  }
+}

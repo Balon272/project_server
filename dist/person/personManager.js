@@ -45,15 +45,4 @@ export function manUpdatePerson(_id, updateFields) {
         }
     });
 }
-/*async function isPersonInGroup(_id: Types.ObjectId )
-// returns false if not in group
-{
-  const group = await manGetGroup({
-    _id: personData.groupID // Pass the groupID as _id
-});
-if (!group)
-  return false
-// Iterating over the people array using a for loop
-  return group.people.includes(personData._id)
-}*/ 
 //# sourceMappingURL=personManager.js.map

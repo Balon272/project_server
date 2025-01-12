@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import {Types} from 'mongoose';
 import { manCreateGroup, manGetGroup, manRmvGroup, manUpdateGroup } from './groupManager.js';
 
 
@@ -44,8 +43,11 @@ export const updateGroup = async (req: Request, res: Response) => {
     //     }
     //   }
 try {
+    
     const { _id, updateFields } = req.body;
-    const completedUpdate = await manUpdateGroup( _id, updateFields )
+    console.log(updateFields)
+    const completedUpdate = await manUpdateGroup( _id, updateFields );
+    
     res.status(200).json(completedUpdate) 
 } 
 catch (error:any) {

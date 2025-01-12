@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import { Group } from "./groupModel.js";
 import { dbCreateGroup, dbSearchGroup, dbRemoveGroup, dbUpdateGroup, fetchAllGroups } from "./groupRep.js";
 export function manCreateGroup(groupData) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -74,6 +75,13 @@ export function manRmvGroup(_id) {
 export function manUpdateGroup(_id, updateFields) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            if (updateFields.people) {
+                updateFields.people.forEach((person) => __awaiter(this, void 0, void 0, function* () {
+                    if (yield isPersonInGroup(person, _id)) {
+                        throw new Error(`Can't insert the person ${person} again to the same group!`);
+                    }
+                }));
+            }
             if (updateFields.subgroups) {
                 // Check if the group is trying to insert itself into its subgroups
                 if (updateFields.subgroups.includes(_id)) {
@@ -137,16 +145,22 @@ export function manGetAllGroups() {
         return yield fetchAllGroups();
     });
 }
-//TO-DO ADD AND ADJUST
-/*async function isPersonInGroup(personData:{groupID: Types.ObjectId, _id: Types.ObjectId} )
-// returns false if not in group
-{
-  const group = await manGetGroup({
-    _id: personData.groupID // Pass the groupID as _id
-});
-if (!group)
-  return false
-// Iterating over the people array using a for loop
-  return group.people.includes(personData._id)
-}*/
+function isPersonInGroup(personId, groupId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Find the group by its ID
+            const group = yield Group.findById(groupId).exec();
+            // If the group is found and the person's ID exists in the group’s people array, return true
+            if (group && group.people.includes(personId)) {
+                return true;
+            }
+            // If the group doesn't contain the person, return false
+            return false;
+        }
+        catch (error) {
+            console.error("Error checking if person is in group:", error);
+            return false;
+        }
+    });
+}
 //# sourceMappingURL=groupManager.js.map

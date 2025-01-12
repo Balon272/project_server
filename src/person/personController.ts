@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import {Types} from 'mongoose';
 import { manCreatePerson, manGetPerson, manRmvPerson, manUpdatePerson } from './personManager.js';
 
 
