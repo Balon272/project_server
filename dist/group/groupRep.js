@@ -22,10 +22,10 @@ export function dbCreateGroup(groupData) {
         }
     });
 }
-export function dbSearchGroup(groupData) {
+export function dbSearchGroup(_id) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            return yield Group.findById(groupData._id);
+            return yield Group.findById(_id);
         }
         catch (error) {
             console.error("Error finding group in rep:", error);
@@ -33,10 +33,10 @@ export function dbSearchGroup(groupData) {
         }
     });
 }
-export function dbRemoveGroup(groupData) {
+export function dbRemoveGroup(_id) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield Group.findByIdAndDelete(groupData._id);
+            yield Group.findByIdAndDelete(_id);
         }
         catch (error) {
             console.error("Error deleting group in rep:", error);
@@ -44,17 +44,13 @@ export function dbRemoveGroup(groupData) {
         }
     });
 }
-export function dbUpdateGroup(groupData) {
+export function dbUpdateGroup(_id, updateFields) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { _id, updateFields } = groupData;
         try {
             const updateObj = {};
             // Set name and groupID fields
             if (updateFields.name) {
                 updateObj.name = updateFields.name;
-            }
-            if (updateFields.groupID) {
-                updateObj.groupID = updateFields.groupID;
             }
             // Push to people and subgroups arrays
             if (updateFields.people && updateFields.people.length > 0) {
@@ -78,6 +74,11 @@ export function dbUpdateGroup(groupData) {
             console.error("Error updating group:", error, _id);
             throw error; // Rethrow the error for the caller to handle
         }
+    });
+}
+export function fetchAllGroups() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield Group.find({});
     });
 }
 //# sourceMappingURL=groupRep.js.map

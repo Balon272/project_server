@@ -16,10 +16,9 @@ export async function dbCreateGroup(groupData:{name: string, subgroups?: Types.O
       }
 }
 
-export async function dbSearchGroup(groupData:{name?: string, subgroups?: Types.ObjectId [], people?:Types.ObjectId [] ,
-    groupID?: Types.ObjectId, _id: Types.ObjectId}){
+export async function dbSearchGroup(_id: Types.ObjectId){
     try{         
-        return await Group.findById(groupData._id);
+        return await Group.findById(_id);
     }
     catch (error) {
         console.error("Error finding group in rep:", error);
@@ -27,9 +26,9 @@ export async function dbSearchGroup(groupData:{name?: string, subgroups?: Types.
       }
 }
 
-export async function dbRemoveGroup(groupData:{_id: Types.ObjectId}){
+export async function dbRemoveGroup(_id: Types.ObjectId){
   try{
-      await Group.findByIdAndDelete(groupData._id);
+      await Group.findByIdAndDelete(_id);
     }
     catch (error) {
         console.error("Error deleting group in rep:", error);
@@ -38,26 +37,20 @@ export async function dbRemoveGroup(groupData:{_id: Types.ObjectId}){
 
 }
 
-export async function dbUpdateGroup(groupData: { 
-  _id: Types.ObjectId; 
+export async function dbUpdateGroup(
+  _id: Types.ObjectId,
   updateFields: { 
     name?: string; 
-    groupID?: Types.ObjectId; 
     people?: Types.ObjectId[]; 
     subgroups?: Types.ObjectId[]; 
-  }; 
-}): Promise<IGroup | string> {
-  const { _id, updateFields } = groupData;
+  }
+): Promise<IGroup | string> {
 
   try {
     const updateObj: any = {};
-
     // Set name and groupID fields
     if (updateFields.name) {
       updateObj.name = updateFields.name;
-    }
-    if (updateFields.groupID) {
-      updateObj.groupID = updateFields.groupID;
     }
     // Push to people and subgroups arrays
     if (updateFields.people && updateFields.people.length > 0) {
@@ -83,4 +76,8 @@ export async function dbUpdateGroup(groupData: {
     console.error("Error updating group:", error, _id);
     throw error; // Rethrow the error for the caller to handle
   }
+}
+
+export async function fetchAllGroups() {
+  return await Group.find({});
 }

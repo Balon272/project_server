@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { dbCreateGroup, dbSearchGroup, dbRemoveGroup, dbUpdateGroup } from "./groupRep.js";
+import { dbCreateGroup, dbSearchGroup, dbRemoveGroup, dbUpdateGroup, fetchAllGroups } from "./groupRep.js";
 export function manCreateGroup(groupData) {
     return __awaiter(this, void 0, void 0, function* () {
         // Validate the person's name
@@ -16,46 +16,51 @@ export function manCreateGroup(groupData) {
                 throw new Error('Name must be longer than 1 character');
             }
             const createdGroup = yield dbCreateGroup(groupData);
-            if (createdGroup.groupID) {
+            if (createdGroup.subgroups) {
                 const result = {
-                    groupID: createdGroup.groupID,
+                    subgroups: createdGroup.subgroups,
                     _id: createdGroup._id
                 };
-                if (yield isGroupOwnFather(result)) {
-                    const updateGroupinGroupJSON = {
-                        _id: groupData.groupID,
-                        updateFields: {
-                            subgroups: [createdGroup._id],
-                        },
-                    };
-                    yield manUpdateGroup(updateGroupinGroupJSON);
+                if (createdGroup.subgroups.includes(result._id)) {
+                    dbRemoveGroup(createdGroup._id);
+                    throw new Error("Group can't contain itself (Group included in SubGroups).");
                 }
             }
-            return { message: 'Person created successfully', person: createdGroup };
+            else if (yield isGroupOwnFather(createdGroup._id)) {
+                dbRemoveGroup(createdGroup._id);
+                throw new Error("Can't insert a group into own lineage!");
+            }
+            return { message: 'Group created successfully', createdGroup };
         }
         catch (error) {
             throw error;
         }
     });
 }
-export function manGetGroup(groupData) {
+export function manGetGroup(_id) {
     return __awaiter(this, void 0, void 0, function* () {
-        return dbSearchGroup(groupData);
+        try {
+            return dbSearchGroup(_id);
+        }
+        catch (error) {
+            throw error;
+        }
     });
 }
-export function manRmvGroup(groupData) {
+export function manRmvGroup(_id) {
     return __awaiter(this, void 0, void 0, function* () {
-        const groupFullDetails = yield manGetGroup({ _id: groupData._id });
+        const groupFullDetails = yield manGetGroup(_id);
         try {
             if (groupFullDetails) {
                 let counter = groupFullDetails.subgroups.length - 1;
                 while (groupFullDetails.subgroups.length > 0) {
-                    console.log(groupFullDetails.subgroups[counter]);
-                    yield dbRemoveGroup({ _id: groupFullDetails.subgroups[counter] });
+                    const remove_id = groupFullDetails.subgroups[counter];
+                    yield dbRemoveGroup(remove_id);
                     groupFullDetails.subgroups.pop();
                     counter--;
                 }
-                yield dbRemoveGroup({ _id: groupData._id });
+                const removedGroup = yield dbRemoveGroup(_id);
+                return (`Group ${removedGroup} and it's subgroups were removed`);
             }
             else {
                 throw new Error("Can't find group to remove!");
@@ -66,21 +71,40 @@ export function manRmvGroup(groupData) {
         }
     });
 }
-export function manUpdateGroup(groupData) {
+export function manUpdateGroup(_id, updateFields) {
     return __awaiter(this, void 0, void 0, function* () {
-        const result = {
-            groupID: groupData.updateFields.groupID,
-            _id: groupData._id
-        };
         try {
-            if (groupData._id == groupData.updateFields.groupID) {
-                throw new Error("Can't insert a group into itself!");
+            if (updateFields.subgroups) {
+                // Check if the group is trying to insert itself into its subgroups
+                if (updateFields.subgroups.includes(_id)) {
+                    throw new Error("Can't insert a group into itself!");
+                }
+                // Check if any subgroup is part of the group's own lineage
+                for (const subgroupId of updateFields.subgroups) {
+                    const isInLineage = yield isGroupOwnFather(subgroupId);
+                    if (isInLineage) {
+                        throw new Error("Can't insert a group into its own lineage!");
+                    }
+                }
+                // Check if any of the current subgroups is the parent of the group being updated
+                for (const subgroupId of updateFields.subgroups) {
+                    const subgroup = yield manGetGroup({ _id: subgroupId });
+                    if (subgroup && subgroup.subgroups && subgroup.subgroups.includes(_id)) {
+                        throw new Error("A group cannot be inserted into a subgroup that is already part of its lineage!");
+                    }
+                }
+                if (yield isGroupOwnFather(_id)) {
+                    throw new Error("Can't insert a group into its own lineage!");
+                }
+                else {
+                    return yield dbUpdateGroup(_id, updateFields);
+                }
             }
-            else if (yield isGroupOwnFather(result)) {
-                throw new Error("Can't insert a group into own lineage!");
+            else if (yield isGroupOwnFather(_id)) {
+                throw new Error("Can't insert a group into its own lineage!");
             }
             else {
-                return dbUpdateGroup(groupData);
+                return yield dbUpdateGroup(_id, updateFields);
             }
         }
         catch (error) {
@@ -88,24 +112,29 @@ export function manUpdateGroup(groupData) {
         }
     });
 }
-export function isGroupOwnFather(groupData) {
+export function isGroupOwnFather(_id) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Returns true if group is in it's own lineage
-        // Base case: If the groupID is null/undefined, no parent exists
-        if (!groupData.groupID) {
-            return false;
-        }
-        // Fetch the parent group using groupID
-        const parentGroup = yield manGetGroup({ _id: groupData.groupID });
-        if (!parentGroup) {
-            return false; // No parent group found, valid hierarchy
-        }
-        // Direct circular reference check
-        if (parentGroup._id.equals(groupData._id)) {
-            return true; // Group is its own ancestor
-        }
-        // Recursive check: Traverse up the hierarchy
-        return isGroupOwnFather({ groupID: parentGroup.groupID, _id: groupData._id });
+        const allGroups = yield manGetAllGroups(); // Fetch all groups
+        // returns true if group in it's lineage
+        const findParent = (currentId) => {
+            for (const group of allGroups) {
+                for (const subgroupId of group.subgroups) {
+                    if (subgroupId.equals(currentId)) {
+                        if (group._id.equals(_id))
+                            return true;
+                        // Recursively check the parent group
+                        return findParent(group._id);
+                    }
+                }
+            }
+            return false; // No parent found, hierarchy is valid
+        };
+        return findParent(_id);
+    });
+}
+export function manGetAllGroups() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield fetchAllGroups();
     });
 }
 //TO-DO ADD AND ADJUST

@@ -21,8 +21,6 @@ export async function manCreatePerson(name: string) {
     }
 }
 
-
-
 export async function manGetPerson( _id: Types.ObjectId){  
               return await dbSearchPerson(_id);
 }

@@ -8,8 +8,8 @@ export const createGroup = async (req: Request, res: Response) => {
             //Group = {"name": "abc", "subgroups": "[]", "people": "[]", _id:}
     try{
         const newGroup = req.body;
-        manCreateGroup(newGroup)
-        res.status(201).json({newGroup});
+        const createdGroup = await manCreateGroup(newGroup)
+        res.status(201).json({createdGroup});
     } catch (error) {
         res.status(500).json({ message: 'Error creating Group in controller', error });
 
@@ -19,8 +19,8 @@ export const getGroup = async (req: Request, res: Response) => {
         //Group = {"name": "abc", "subgroups": "[]", "people": "[]", _id:}
 try {
     const findGroup = req.body
-    const Details = await manGetGroup(findGroup);
-    res.status(200).json(Details);
+    const foundGroup = await manGetGroup(findGroup);
+    res.status(200).json(foundGroup);
 } catch (error) {
         res.status(500).json({ message: 'Error finding group in Controller', error });
 }
@@ -44,8 +44,8 @@ export const updateGroup = async (req: Request, res: Response) => {
     //     }
     //   }
 try {
-    const updateGroup = req.body;
-    const completedUpdate = await manUpdateGroup(updateGroup)
+    const { _id, updateFields } = req.body;
+    const completedUpdate = await manUpdateGroup( _id, updateFields )
     res.status(200).json(completedUpdate) 
 } 
 catch (error:any) {

@@ -1,59 +1,58 @@
-import { updateGroup } from "./groupController";
-import { dbCreateGroup, dbSearchGroup, dbRemoveGroup, dbUpdateGroup } from "./groupRep.js";
+import { IGroup } from "./groupModel";
+import { dbCreateGroup, dbSearchGroup, dbRemoveGroup, dbUpdateGroup, fetchAllGroups } from "./groupRep.js";
 import {Types} from 'mongoose';
 
-export async function manCreateGroup(groupData:{name: string, subgroups: Types.ObjectId[], people:Types.ObjectId[] ,
-    groupID: Types.ObjectId} ){
+export async function manCreateGroup(groupData:{name: string, subgroups: Types.ObjectId[], people:Types.ObjectId[]} ){
         // Validate the person's name
         try{
              if (groupData.name && groupData.name.length <= 1) {
                throw new Error('Name must be longer than 1 character');
              }
-             
              const createdGroup = await dbCreateGroup(groupData)
-               if (createdGroup.groupID) {
+             
+               if (createdGroup.subgroups) {
                 const result = {
-                  groupID: createdGroup.groupID,
+                  subgroups: createdGroup.subgroups,
                   _id: createdGroup._id as Types.ObjectId
                 };
-                if (await isGroupOwnFather(result)){    
-                   const updateGroupinGroupJSON = {
-                     _id: groupData.groupID,
-                     updateFields: {
-                       subgroups: [createdGroup._id] as Types.ObjectId[], 
-                   },
-                   };
-                   await manUpdateGroup(updateGroupinGroupJSON);
+                if (createdGroup.subgroups.includes(result._id)){    
+                    dbRemoveGroup(createdGroup._id as Types.ObjectId)
+                    throw new Error ("Group can't contain itself (Group included in SubGroups).")
+                   }           
+                }
+                else if (await isGroupOwnFather(createdGroup._id as Types.ObjectId)){
+                  dbRemoveGroup(createdGroup._id as Types.ObjectId)
+                  throw new Error("Can't insert a group into own lineage!");
+                }     
+           return { message: 'Group created successfully', createdGroup };
            }
-          }
-       
-             
-             return { message: 'Person created successfully', person: createdGroup };
-           }
-            catch (error) {
+            catch (error:any) {
              throw error; 
            }
 }
-export async function manGetGroup(groupData:{name?: string, subgroups?: Types.ObjectId [], people?: Types.ObjectId [] ,
-    groupID?: Types.ObjectId,  _id: Types.ObjectId} ){
-        return dbSearchGroup(groupData);
-        
+export async function manGetGroup(_id: Types.ObjectId){
+  try{
+        return dbSearchGroup(_id);
+  }
+  catch(error:any) {
+    throw error;
+  }
 }
 
-export async function manRmvGroup(groupData:{_id:Types.ObjectId} ){
-        const groupFullDetails = await manGetGroup({_id: groupData._id})  
+export async function manRmvGroup(_id:Types.ObjectId){
+        const groupFullDetails : IGroup | null = await manGetGroup(_id)  
         try{ 
         if (groupFullDetails){
         let counter = groupFullDetails.subgroups.length - 1
         while (groupFullDetails.subgroups.length > 0)
             {
-              console.log(groupFullDetails.subgroups[counter])
-              await dbRemoveGroup({_id: groupFullDetails.subgroups[counter]})
+              const remove_id = groupFullDetails.subgroups[counter]
+              await dbRemoveGroup(remove_id)
               groupFullDetails.subgroups.pop()
               counter--
             }
-
-        await dbRemoveGroup({_id: groupData._id});
+        const removedGroup = await dbRemoveGroup(_id)
+        return (`Group ${removedGroup} and it's subgroups were removed`);
         }
         else {
           throw new Error("Can't find group to remove!");
@@ -65,48 +64,72 @@ export async function manRmvGroup(groupData:{_id:Types.ObjectId} ){
 }
 
 
-export async function manUpdateGroup(groupData: { 
-    _id: Types.ObjectId; updateFields: { name?: string; groupID?: Types.ObjectId; people?:Types.ObjectId[]; 
-      subgroups?:Types.ObjectId[];}; 
-  }){  
-     const result = {
-      groupID: groupData.updateFields.groupID,
-      _id: groupData._id as Types.ObjectId}
-    try{
-     if(groupData._id == groupData.updateFields.groupID){
+export async function manUpdateGroup(
+  _id: Types.ObjectId,
+  updateFields: { name?: string; people?: Types.ObjectId[]; subgroups?: Types.ObjectId[] }
+) {
+  try {
+    if (updateFields.subgroups) {
+      // Check if the group is trying to insert itself into its subgroups
+      if (updateFields.subgroups.includes(_id)) {
         throw new Error("Can't insert a group into itself!");
-     }
-    else if (await isGroupOwnFather(result)){
-      throw new Error("Can't insert a group into own lineage!");
+      }
+
+      // Check if any subgroup is part of the group's own lineage
+      for (const subgroupId of updateFields.subgroups) {
+        const isInLineage = await isGroupOwnFather(subgroupId);
+        if (isInLineage) {
+          throw new Error("Can't insert a group into its own lineage!");
+        }
+      }
+
+      // Check if any of the current subgroups is the parent of the group being updated
+      for (const subgroupId of updateFields.subgroups) {
+        const subgroup = await manGetGroup({ _id: subgroupId } as Types.ObjectId);
+        if (subgroup && subgroup.subgroups && subgroup.subgroups.includes(_id)) {
+          throw new Error("A group cannot be inserted into a subgroup that is already part of its lineage!");
+        }
+      }
+       if (await isGroupOwnFather(_id)) {
+        throw new Error("Can't insert a group into its own lineage!");
+      } else {
+        return await dbUpdateGroup(_id, updateFields);
+      }
+
+    } 
+    else if (await isGroupOwnFather(_id)) {
+      throw new Error("Can't insert a group into its own lineage!");
+    } else {
+      return await dbUpdateGroup(_id, updateFields);
     }
-    
-     else
-     {
-      return dbUpdateGroup(groupData)}
-    }
-     catch(error:any) {
-      throw error
-     }
+  } catch (error: any) {
+    throw error;
+  }
 }
 
-export async function isGroupOwnFather(groupData: { groupID?: Types.ObjectId, _id: Types.ObjectId }): Promise<boolean> {
-  // Returns true if group is in it's own lineage
-  // Base case: If the groupID is null/undefined, no parent exists
-  if (!groupData.groupID) {
-    return false;
-  }
-  // Fetch the parent group using groupID
-  const parentGroup = await manGetGroup({ _id: groupData.groupID });
-  if (!parentGroup) {
-    return false; // No parent group found, valid hierarchy
-  }
-  // Direct circular reference check
-  if ((parentGroup._id as Types.ObjectId).equals(groupData._id)) {
-    return true; // Group is its own ancestor
-  }
-  // Recursive check: Traverse up the hierarchy
-  return isGroupOwnFather({ groupID: parentGroup.groupID, _id: groupData._id });
+export async function isGroupOwnFather(_id: Types.ObjectId): Promise<boolean> {
+  const allGroups = await manGetAllGroups(); // Fetch all groups
+// returns true if group in it's lineage
+  const findParent = (currentId: Types.ObjectId): boolean => {
+    for (const group of allGroups) {
+      for (const subgroupId of group.subgroups) {
+        if (subgroupId.equals(currentId)) {
+          if ((group._id as Types.ObjectId).equals(_id)) return true;
+          // Recursively check the parent group
+          return findParent(group._id as Types.ObjectId);
+        }
+      }
+    }
+    return false; // No parent found, hierarchy is valid
+  };
+
+  return findParent(_id);
 }
+
+export async function manGetAllGroups() {
+  return await fetchAllGroups();
+}
+
 //TO-DO ADD AND ADJUST
 /*async function isPersonInGroup(personData:{groupID: Types.ObjectId, _id: Types.ObjectId} ) 
 // returns false if not in group

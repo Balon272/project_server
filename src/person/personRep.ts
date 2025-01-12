@@ -57,3 +57,5 @@ export async function dbUpdatePerson(_id: Types.ObjectId, name: string) {
     throw error;
   }
 }
+
+function getPersonGroup(){}
