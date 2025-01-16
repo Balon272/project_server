@@ -1,5 +1,5 @@
 import { IGroup, Group } from "./groupModel.js";
-import { dbCreateGroup, dbSearchGroup, dbRemoveGroup, dbUpdateGroup, fetchAllGroups } from "./groupRep.js";
+import { dbCreateGroup, dbSearchGroup, dbRemoveGroup, dbUpdateGroup, fetchAllGroups, dbPullGroups } from "./groupRep.js";
 import {Types} from 'mongoose';
 
 export async function manCreateGroup(groupData:{name: string, subgroups: Types.ObjectId[], people:Types.ObjectId[]} ){
@@ -31,9 +31,12 @@ export async function manCreateGroup(groupData:{name: string, subgroups: Types.O
              throw error; 
            }
 }
+
+
 export async function manGetGroup(_id: Types.ObjectId){
   try{
         return dbSearchGroup(_id);
+
   }
   catch(error:any) {
     throw error;
@@ -93,7 +96,7 @@ export async function manUpdateGroup(  _id: Types.ObjectId,
       // Check if any of the current subgroups is the parent of the group being updated
       for (const subgroupId of updateFields.subgroups) {
         const subgroup = await manGetGroup({ _id: subgroupId } as Types.ObjectId);
-        if (subgroup && subgroup.subgroups && subgroup.subgroups.includes(_id)) {
+        if (subgroup &&  subgroup.subgroups && subgroup.subgroups.includes(_id)) {
           throw new Error("A group cannot be inserted into a subgroup that is already part of its lineage!");
         }
       }

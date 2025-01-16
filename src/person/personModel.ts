@@ -1,13 +1,12 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
-
 // Define the Person interface extending Mongoose's Document
+export interface IPerson extends Document {
+  _id: Types.ObjectId; // Explicitly defining _id as part of the interface
+  name: string;
+}
 
-
-// Define the Group Schema
-
-
-
+// Define the Person schema
 const personSchema = new Schema<IPerson>(
   {
     name: {
@@ -17,18 +16,9 @@ const personSchema = new Schema<IPerson>(
     },
   },
   {
-    collection: 'people' // Specify collection name (optional, defaults to pluralized model name)
+    collection: 'people', // Optional: specify collection name explicitly
   }
 );
 
-  export interface IPerson extends Document {
-    name: string;
-    _id: Types.ObjectId;
-  }
-
-
-
-// Define the Group interface extending Mongoose's Document
-
-  export const Person = mongoose.model<IPerson>('Person', personSchema);
-
+// Export the Person model
+export const Person = mongoose.model<IPerson>('Person', personSchema);

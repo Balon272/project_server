@@ -22,6 +22,17 @@ export function dbCreateGroup(groupData) {
         }
     });
 }
+export function dbPullGroups() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            return yield Group.find();
+        }
+        catch (error) {
+            console.error("Error finding group in rep:", error);
+            throw new Error("Failed to find group");
+        }
+    });
+}
 export function dbSearchGroup(_id) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

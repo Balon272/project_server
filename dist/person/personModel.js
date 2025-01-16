@@ -1,6 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-// Define the Person interface extending Mongoose's Document
-// Define the Group Schema
+// Define the Person schema
 const personSchema = new Schema({
     name: {
         type: String,
@@ -8,8 +7,8 @@ const personSchema = new Schema({
         trim: true,
     },
 }, {
-    collection: 'people' // Specify collection name (optional, defaults to pluralized model name)
+    collection: 'people', // Optional: specify collection name explicitly
 });
-// Define the Group interface extending Mongoose's Document
+// Export the Person model
 export const Person = mongoose.model('Person', personSchema);
 //# sourceMappingURL=personModel.js.map

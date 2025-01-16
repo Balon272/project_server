@@ -19,6 +19,7 @@ export const getPerson = async (req: Request, res: Response) => {
 try {
     const findPerson = req.body
     const foundPerson = await manGetPerson(findPerson);
+
     res.status(200).json(foundPerson);
 } catch (error) {
 res.status(500).json({ message: 'Error finding person in Controller', error });
@@ -29,7 +30,7 @@ export const removePerson = async (req: Request, res: Response) => {
     //Person  = {"name": "abcdefg", groupID: "", "_id": ""}
 try {  
     const rmvPerson = req.body;
-    const person = await manRmvPerson(rmvPerson)
+    const person = await manRmvPerson(rmvPerson);
     console.log(person);
     res.status(200).json(person);
 }  

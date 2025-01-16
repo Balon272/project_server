@@ -16,8 +16,19 @@ export async function dbCreateGroup(groupData:{name: string, subgroups?: Types.O
       }
 }
 
+
+export async function dbPullGroups(){
+  try{
+      return await Group.find();
+  }
+  catch (error) {
+      console.error("Error finding group in rep:", error);
+      throw new Error("Failed to find group");
+    }
+}
+
 export async function dbSearchGroup(_id: Types.ObjectId){
-    try{         
+    try{
         return await Group.findById(_id);
     }
     catch (error) {

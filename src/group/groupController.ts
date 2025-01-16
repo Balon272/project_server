@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { manCreateGroup, manGetGroup, manRmvGroup, manUpdateGroup } from './groupManager.js';
+import { manCreateGroup, manGetGroup, manRmvGroup, manUpdateGroup, manGetAllGroups} from './groupManager.js';
 
 
 
@@ -18,9 +18,16 @@ export const getGroup = async (req: Request, res: Response) => {
         //Group = {"name": "abc", "subgroups": "[]", "people": "[]", _id:}
 try {
     const findGroup = req.body
-    const foundGroup = await manGetGroup(findGroup);
-    res.status(200).json(foundGroup);
-} catch (error) {
+    if (findGroup._id){   
+         const foundGroup = await manGetGroup(findGroup);
+        res.status(200).json(foundGroup);}
+    else{
+        const foundGroup = await manGetAllGroups();
+        res.status(200).json(foundGroup)
+    }
+    }
+
+ catch (error) {
         res.status(500).json({ message: 'Error finding group in Controller', error });
 }
 }

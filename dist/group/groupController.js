@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { manCreateGroup, manGetGroup, manRmvGroup, manUpdateGroup } from './groupManager.js';
+import { manCreateGroup, manGetGroup, manRmvGroup, manUpdateGroup, manGetAllGroups } from './groupManager.js';
 export const createGroup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     //Group = {"name": "abc", "subgroups": "[]", "people": "[]", _id:}
     try {
@@ -23,8 +23,14 @@ export const getGroup = (req, res) => __awaiter(void 0, void 0, void 0, function
     //Group = {"name": "abc", "subgroups": "[]", "people": "[]", _id:}
     try {
         const findGroup = req.body;
-        const foundGroup = yield manGetGroup(findGroup);
-        res.status(200).json(foundGroup);
+        if (findGroup._id) {
+            const foundGroup = yield manGetGroup(findGroup);
+            res.status(200).json(foundGroup);
+        }
+        else {
+            const foundGroup = yield manGetAllGroups();
+            res.status(200).json(foundGroup);
+        }
     }
     catch (error) {
         res.status(500).json({ message: 'Error finding group in Controller', error });
