@@ -56,7 +56,6 @@ export const updateGroup = (req, res) => __awaiter(void 0, void 0, void 0, funct
     //   }
     try {
         const { _id, updateFields } = req.body;
-        console.log(updateFields);
         const completedUpdate = yield manUpdateGroup(_id, updateFields);
         res.status(200).json(completedUpdate);
     }

@@ -96,6 +96,7 @@ export function manUpdateGroup(_id, updateFields) {
                 }
                 // Check if any of the current subgroups is the parent of the group being updated
                 for (const subgroupId of updateFields.subgroups) {
+                    console.log('SubgroupId:', subgroupId);
                     const subgroup = yield manGetGroup({ _id: subgroupId });
                     if (subgroup && subgroup.subgroups && subgroup.subgroups.includes(_id)) {
                         throw new Error("A group cannot be inserted into a subgroup that is already part of its lineage!");

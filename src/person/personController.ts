@@ -7,6 +7,7 @@ export const createPerson = async (req: Request, res: Response) => {
             //Person  = {"name": "abcdefg", groupID: "", _id}
     try{
         const newPerson = req.body;
+                console.log(newPerson)
         const createdPerson = await manCreatePerson(newPerson)
         res.status(201).json({createdPerson});
     } catch (error) {

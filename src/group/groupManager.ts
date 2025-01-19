@@ -80,6 +80,7 @@ export async function manUpdateGroup(  _id: Types.ObjectId,
       })
     }
     if (updateFields.subgroups) {
+
       // Check if the group is trying to insert itself into its subgroups
       if (updateFields.subgroups.includes(_id)) {
         throw new Error("Can't insert a group into itself!");
@@ -87,7 +88,8 @@ export async function manUpdateGroup(  _id: Types.ObjectId,
 
       // Check if any subgroup is part of the group's own lineage
       for (const subgroupId of updateFields.subgroups) {
-        const isInLineage = await isGroupOwnFather(subgroupId);
+        const isInLineage = await isGroupOwnFather(subgroupId as Types.ObjectId);
+
         if (isInLineage) {
           throw new Error("Can't insert a group into its own lineage!");
         }
@@ -95,11 +97,13 @@ export async function manUpdateGroup(  _id: Types.ObjectId,
 
       // Check if any of the current subgroups is the parent of the group being updated
       for (const subgroupId of updateFields.subgroups) {
-        const subgroup = await manGetGroup({ _id: subgroupId } as Types.ObjectId);
+        console.log('SubgroupId:', subgroupId);
+        const subgroup = await manGetGroup({ _id: subgroupId as Types.ObjectId } as Types.ObjectId);
         if (subgroup &&  subgroup.subgroups && subgroup.subgroups.includes(_id)) {
           throw new Error("A group cannot be inserted into a subgroup that is already part of its lineage!");
         }
       }
+
        if (await isGroupOwnFather(_id)) {
         throw new Error("Can't insert a group into its own lineage!");
       } else {

@@ -12,6 +12,7 @@ export const createPerson = (req, res) => __awaiter(void 0, void 0, void 0, func
     //Person  = {"name": "abcdefg", groupID: "", _id}
     try {
         const newPerson = req.body;
+        console.log(newPerson);
         const createdPerson = yield manCreatePerson(newPerson);
         res.status(201).json({ createdPerson });
     }

@@ -50,9 +50,7 @@ export const updateGroup = async (req: Request, res: Response) => {
     //     }
     //   }
 try {
-    
     const { _id, updateFields } = req.body;
-    console.log(updateFields)
     const completedUpdate = await manUpdateGroup( _id, updateFields );
     
     res.status(200).json(completedUpdate) 

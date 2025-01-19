@@ -1,6 +1,6 @@
 import { updatePerson } from './personController.js';
 import {IPerson, Person} from './personModel.js'
-import mongoose, {Types} from 'mongoose'
+import  {Types} from 'mongoose'
 
 
 export async function dbCreatePerson(name: string):Promise<IPerson>{
