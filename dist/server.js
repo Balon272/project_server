@@ -13,8 +13,9 @@ import groupRouter from './group/groupRouter.js';
 import { connect } from 'mongoose';
 import cors from 'cors';
 export const app = express();
-app.listen(1107, () => {
-    console.log('Server is listening on port: ', 1107);
+const PORT = 1107;
+app.listen(PORT, () => {
+    console.log('Server is listening on port: ', PORT);
 });
 app.use(cors({
     origin: 'http://localhost:5173', // frontend URL
@@ -28,11 +29,12 @@ app.use('/handler', groupRouter);
 export function connectDB() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield connect("mongodb://localhost:27017/project");
+            yield connect("mongodb://mongo:27017/project");
             console.log("Connected to MongoDB...");
         }
         catch (error) {
             console.error("Error connecting to MongoDB:", error);
+            process.exit(1); // Exit if DB connection fails
         }
     });
 }
